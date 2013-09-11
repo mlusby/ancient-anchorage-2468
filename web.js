@@ -23,6 +23,11 @@ app.get('/post/', function(req, res){
 	res.render('post',{title:"Create new blog entry"});
 });
 
+app.post('/post/', function(req, res){
+	res.send("You said" + req.body.blogpost);
+	console.log(req.body.blogpost);
+});
+
 var port = process.env.PORT || 5000 ;
 app.listen(port, function() {
 	console.log("Listening on " + port);
