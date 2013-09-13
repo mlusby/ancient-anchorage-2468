@@ -1,4 +1,5 @@
 var express = require("express");
+var http = require("http");
 var app = express();
 app.use(express.logger());
 app.use(express.static('public'));
@@ -24,8 +25,32 @@ app.get('/post/', function(req, res){
 });
 
 app.post('/post/', function(req, res){
-	res.send("You said" + req.body.blogpost);
-	console.log(req.body.blogpost);
+	var options = {
+	  host: process.env.BONSAI_URL,
+	  port: 80,
+	  path: '/blog/posts/' + req.body.postId,
+	  method: 'PUT'
+	};
+
+	var elasticReq = http.request(options, function(res) {
+	  console.log('STATUS: ' + res.statusCode);
+	  console.log('HEADERS: ' + JSON.stringify(res.headers));
+	  res.setEncoding('utf8');
+	  res.on('data', function (chunk) {
+	    console.log('BODY: ' + chunk);
+	  });
+	});
+
+	elasticReq.on('error', function(e) {
+	  console.log('problem with request: ' + e.message);
+	});
+
+	// write data to request body
+	elasticReq.write('{"author":"'+req.body.author+'","post":"');
+	elasticReq.write(req.body.blogpost);
+	elasticReq.write('"}');
+	elasticReq.end();
+	res.send("BonsaiURL: " + process.env.BONSAI_URL);
 });
 
 var port = process.env.PORT || 5000 ;
