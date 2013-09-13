@@ -46,11 +46,11 @@ app.post('/post/', function(req, res){
 	});
 
 	// write data to request body
-	elasticReq.write('{"author":"'+req.body.author+'","post":"');
-	elasticReq.write(req.body.blogpost);
-	elasticReq.write('"}');
+	var payload = '{"author":"'+req.body.author+'","post":"';
+	payload = payload + req.body.blogpost + '"}';
+	elasticReq.write(payload);
 	elasticReq.end();
-	res.send("BonsaiURL: " + process.env.BONSAI_URL);
+	res.send("BonsaiURL: " + process.env.BONSAI_URL + "<br />Payload: " + payload );
 });
 
 var port = process.env.PORT || 5000 ;
