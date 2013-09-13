@@ -25,11 +25,20 @@ app.get('/post/', function(req, res){
 });
 
 app.post('/post/', function(req, res){
+	var BonsaiURL = process.env.BONSAI_URL;
+	var hostRegex = /http:\/\/([^:]*):([^\@]*)\@(.*)/	
+	var hostParams = BonsaiURL.match(hostRegex);
+	var userName = hostParams[1];
+	var pass = hostParams[2];
+	var host = hostParams[3];
 	var options = {
-	  host: process.env.BONSAI_URL,
+	  host: host,
 	  port: 80,
 	  path: '/blog/posts/' + req.body.postId,
-	  method: 'PUT'
+	  method: 'PUT',
+	  headers: {
+	     'Authorization': 'Basic ' + new Buffer( userName + ':' + pass).toString('base64')
+	   }    
 	};
 
 	var elasticReq = http.request(options, function(res) {
@@ -50,7 +59,7 @@ app.post('/post/', function(req, res){
 	payload = payload + req.body.blogpost + '"}';
 	elasticReq.write(payload);
 	elasticReq.end();
-	res.send("BonsaiURL: " + process.env.BONSAI_URL + "<br />Payload: " + payload );
+	res.send("BonsaiURL: " + host + "<br />Payload: " + payload );
 });
 
 var port = process.env.PORT || 5000 ;
