@@ -1,7 +1,7 @@
-<h1> This is the first attempt using Handlebars.</h1>
+<h1> {{title}}</h1>
 {{#each entries}}
    <p>
-      <a href="/article/{{id}}">{{title}}</a><br/>
-      Published: {{published}}
+      <a href="#">{{_source.post}}</a><br/>
+      Author: {{_source.author}}
    </p>
 {{/each}}

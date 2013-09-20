@@ -20,6 +20,34 @@ app.get('/article/:id', function(req, res) {
    res.render('article',{title:entry.title, blog:entry});
 });
 
+app.get('/getposts/', function(req, res){
+	var BonsaiURL = process.env.BONSAI_URL;
+	var hostRegex = /http:\/\/([^:]*):([^\@]*)\@(.*)/	
+	var hostParams = BonsaiURL.match(hostRegex);
+	var userName = hostParams[1];
+	var pass = hostParams[2];
+	var host = hostParams[3];
+	var options = {
+	  host: host,
+	  port: 80,
+	  path: '/blog/posts/_search',
+	  method: 'GET',
+	  headers: {
+	     'Authorization': 'Basic ' + new Buffer( userName + ':' + pass).toString('base64')
+	   }    
+	};
+	http.get(options, function(eRes) {
+		eRes.on("data", function(chunk) {
+			var data = JSON.parse(chunk);
+			var entries = data.hits.hits;
+			//res.send(entries);
+			res.render('index', {"title": "Elastic Entries", "entries": entries});
+		});	
+	}).on('error', function(e) {
+		res.send("Got error: " + e.message);
+	});
+});
+
 app.get('/post/', function(req, res){
 	res.render('post',{title:"Create new blog entry"});
 });
