@@ -11,22 +11,32 @@ var bonsaiHost;
 var bonsaiUser;
 var bonsaiPass;
 
-var setBonsaiConnectionSettings = function(){
+var getLocalBonsaiURL = function(){
 	var localBonsaiURL;
 	fs.readFile('bonsaiurl.txt', 'utf8', function (err,data) {
 		if (err) {
 			return console.log(err);
 		}
-		console.log(data);
-		var BonsaiURL = process.env.BONSAI_URL || data;
-		var hostRegex = /http:\/\/([^:]*):([^\@]*)\@(.*)/	
-		var hostParams = BonsaiURL.match(hostRegex);
-		bonsaiUser = hostParams[1];
-		bonsaiPass = hostParams[2];
-		bonsaiHost = hostParams[3];
+		parseBonsaiParams(data);
 	});
-}();
+}
+var setBonsaiConnectionSettings = function() {
+	BonsaiURL = process.env.BONSAI_URL;
+	if (BonsaiURL) {
+		parseBonsaiParams(BonsaiURL);
+	} else {
+		getLocalBonsaiURL();
+	}
+}
+var parseBonsaiParams = function(url) {
+	var hostRegex = /http:\/\/([^:]*):([^\@]*)\@(.*)/	
+	var hostParams = url.match(hostRegex);
+	bonsaiUser = hostParams[1];
+	bonsaiPass = hostParams[2];
+	bonsaiHost = hostParams[3];
+}
 
+setBonsaiConnectionSettings();
 app.set('view engine', 'html');
 app.engine('html', hbs.__express);
 app.use(express.bodyParser());
