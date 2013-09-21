@@ -1,16 +1,36 @@
 var express = require("express");
 var http = require("http");
+var	fs = require('fs');
 var app = express();
 app.use(express.logger());
 app.use(express.static('public'));
 
 var hbs = require('hbs');
 var blogEngine = require('./blog');
+var bonsaiHost;
+var bonsaiUser;
+var bonsaiPass;
+
+var setBonsaiConnectionSettings = function(){
+	var localBonsaiURL;
+	fs.readFile('bonsaiurl.txt', 'utf8', function (err,data) {
+		if (err) {
+			return console.log(err);
+		}
+		console.log(data);
+		var BonsaiURL = process.env.BONSAI_URL || data;
+		var hostRegex = /http:\/\/([^:]*):([^\@]*)\@(.*)/	
+		var hostParams = BonsaiURL.match(hostRegex);
+		bonsaiUser = hostParams[1];
+		bonsaiPass = hostParams[2];
+		bonsaiHost = hostParams[3];
+	});
+}();
 
 app.set('view engine', 'html');
 app.engine('html', hbs.__express);
 app.use(express.bodyParser());
- 
+
 app.get('/', function(req, res) {
    res.render('index', {"title":"My Blog", "entries": blogEngine.getBlogEntries()});
 });
@@ -21,19 +41,13 @@ app.get('/article/:id', function(req, res) {
 });
 
 app.get('/getposts/', function(req, res){
-	var BonsaiURL = process.env.BONSAI_URL;
-	var hostRegex = /http:\/\/([^:]*):([^\@]*)\@(.*)/	
-	var hostParams = BonsaiURL.match(hostRegex);
-	var userName = hostParams[1];
-	var pass = hostParams[2];
-	var host = hostParams[3];
-	var options = {
-	  host: host,
+	options = {
+	  host: bonsaiHost,
 	  port: 80,
 	  path: '/blog/posts/_search',
 	  method: 'GET',
 	  headers: {
-	     'Authorization': 'Basic ' + new Buffer( userName + ':' + pass).toString('base64')
+	     'Authorization': 'Basic ' + new Buffer( bonsaiUser + ':' + bonsaiPass).toString('base64')
 	   }    
 	};
 	http.get(options, function(eRes) {
