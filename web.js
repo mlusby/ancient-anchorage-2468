@@ -77,19 +77,13 @@ app.get('/post/', function(req, res){
 });
 
 app.post('/post/', function(req, res){
-	var BonsaiURL = process.env.BONSAI_URL;
-	var hostRegex = /http:\/\/([^:]*):([^\@]*)\@(.*)/	
-	var hostParams = BonsaiURL.match(hostRegex);
-	var userName = hostParams[1];
-	var pass = hostParams[2];
-	var host = hostParams[3];
 	var options = {
-	  host: host,
+	  host: bonsaiHost,
 	  port: 80,
 	  path: '/blog/posts/' + req.body.postId,
 	  method: 'PUT',
 	  headers: {
-	     'Authorization': 'Basic ' + new Buffer( userName + ':' + pass).toString('base64')
+	     'Authorization': 'Basic ' + new Buffer( bonsaiUser + ':' + bonsaiPass).toString('base64')
 	   }    
 	};
 
